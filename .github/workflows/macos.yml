@@ -1,0 +1,22 @@
+name: macOS build and tests
+on:
+  push:
+    paths: ['macos/**', 'assets/**', '.github/workflows/macos.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test and package universal application
+        run: bash macos/build.sh
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenMemory-macOS-preview
+          path: macos/build/artifacts/
+          if-no-files-found: error
+          retention-days: 30

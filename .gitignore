@@ -12,6 +12,8 @@ tools/
 *.pfx
 *.key
 *.log
+.build/
+.swiftpm/
 release/*
 !release/OpenMemory-Setup-2.3.0-x64.exe
 !release/OpenMemory-Setup-2.3.0-x64.sha256
