@@ -1,6 +1,8 @@
 name: macOS build and tests
 on:
   push:
+    branches: ['**']
+    tags: ['macos-v*']
     paths: ['macos/**', 'assets/**', '.github/workflows/macos.yml']
   workflow_dispatch:
 permissions:
@@ -20,3 +22,19 @@ jobs:
           path: macos/build/artifacts/
           if-no-files-found: error
           retention-days: 30
+  publish:
+    if: startsWith(github.ref, 'refs/tags/macos-v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: OpenMemory-macOS-preview
+          path: installers
+      - name: Publish tested macOS preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" installers/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "OpenMemory macOS 3.0 미리보기" --prerelease --notes-file macos/RELEASE_NOTES.md
