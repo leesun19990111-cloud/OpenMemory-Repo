@@ -110,7 +110,7 @@ public enum Validation {
     public static func documentURL(_ raw: String) -> URL? {
         guard !raw.isEmpty, !raw.contains("\0"), !raw.contains("\n"), !raw.contains("\r") else { return nil }
         let candidate: URL?
-        if raw.hasPrefix("/") { candidate = URL(fileURLWithPath: raw) }
+        if raw.hasPrefix("/") { candidate = URL(fileURLWithPath: raw, isDirectory: raw.hasSuffix("/")) }
         else { candidate = URL(string: raw) }
         guard let url = candidate else { return nil }
         if url.isFileURL {
@@ -118,7 +118,7 @@ public enum Validation {
             guard url.path.hasPrefix("/") else { return nil }
             let forbidden = ["app", "sh", "command", "scpt", "scptd", "workflow", "pkg", "dmg", "exe", "bat", "ps1"]
             guard !forbidden.contains(url.pathExtension.lowercased()) else { return nil }
-            return URL(fileURLWithPath: url.path).standardizedFileURL
+            return URL(fileURLWithPath: url.path, isDirectory: url.hasDirectoryPath).standardizedFileURL
         }
         guard ["https", "http"].contains(url.scheme?.lowercased() ?? ""),
               !(url.host ?? "").isEmpty, url.user == nil, url.password == nil else { return nil }

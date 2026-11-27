@@ -23,10 +23,11 @@ import OpenMemoryCore
             return "이미 실행 중"
         }
         guard let target = Validation.documentURL(entry.url) else { return "지원하지 않는 문서 경로" }
-        if target.isFileURL && !FileManager.default.fileExists(atPath: target.path) {
+        let exists = target.isFileURL ? await FileProbe.exists(target.path) : true
+        if exists != true {
             var fallback = entry; fallback.kind = .app; fallback.url = ""
             _ = try await open(fallback)
-            return "파일 없음 · 기록을 유지하고 앱만 실행"
+            return exists == nil ? "공유폴더 응답 시간 초과 · 기록을 유지하고 앱만 실행" : "파일 없음 · 기록을 유지하고 앱만 실행"
         }
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             NSWorkspace.shared.open([target], withApplicationAt: application, configuration: options) { _, error in
@@ -95,5 +96,24 @@ import OpenMemoryCore
         }
         return moved && geometry && Accessibility.bool(element, kAXMinimizedAttribute) == saved.minimized
             && Accessibility.bool(element, "AXFullScreen") == saved.fullScreen
+    }
+}
+
+private enum FileProbe {
+    static func exists(_ path: String) async -> Bool? {
+        await withCheckedContinuation { continuation in
+            let completion = ProbeCompletion(continuation)
+            DispatchQueue.global(qos: .utility).async { completion.finish(FileManager.default.fileExists(atPath: path)) }
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 8) { completion.finish(nil) }
+        }
+    }
+}
+private final class ProbeCompletion: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<Bool?, Never>?
+    init(_ continuation: CheckedContinuation<Bool?, Never>) { self.continuation = continuation }
+    func finish(_ value: Bool?) {
+        lock.lock(); let callback = continuation; continuation = nil; lock.unlock()
+        callback?.resume(returning: value)
     }
 }

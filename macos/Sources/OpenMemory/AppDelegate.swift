@@ -31,8 +31,9 @@ import OpenMemoryCore
         details.string = "창을 이동하려면 손쉬운 사용 권한이 필요합니다.\n원본 문서의 수정 내용은 각 앱에서 먼저 저장하세요."
         status.stringValue = "실제 Mac 앱 화면 · 예시 작업 목록 (개인 작업 기록 아님)"
         window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true); window.makeFirstResponder(table)
         RunLoop.current.run(until: Date().addingTimeInterval(0.5))
-        let view = window.contentView!; view.layoutSubtreeIfNeeded(); view.displayIfNeeded()
+        let view = window.contentView!.superview ?? window.contentView!; view.layoutSubtreeIfNeeded(); view.displayIfNeeded()
         guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { throw ModelError.invalidRecord }
         view.cacheDisplay(in: view.bounds, to: bitmap)
         guard let png = bitmap.representation(using: .png, properties: [:]) else { throw ModelError.invalidRecord }
@@ -56,10 +57,12 @@ import OpenMemoryCore
 
     private func setupWindow() {
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1050, height: 690), styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
-        window.title = "OpenMemory · 작업 이어 열기"; window.minSize = NSSize(width: 850, height: 560)
+        window.title = "OpenMemory · 작업 이어 열기"; window.minSize = NSSize(width: 850, height: 600)
         window.backgroundColor = NSColor(calibratedWhite: 0.97, alpha: 1)
+        window.appearance = NSAppearance(named: .aqua)
         window.delegate = self; window.isReleasedWhenClosed = false; window.center()
         let content = window.contentView!
+        content.wantsLayer = true; content.layer?.backgroundColor = window.backgroundColor.cgColor
         let stack = NSStackView(); stack.orientation = .vertical; stack.alignment = .leading; stack.spacing = 16
         stack.translatesAutoresizingMaskIntoConstraints = false; content.addSubview(stack)
         NSLayoutConstraint.activate([stack.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 24), stack.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -24), stack.topAnchor.constraint(equalTo: content.topAnchor, constant: 22), stack.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -18)])
@@ -75,11 +78,11 @@ import OpenMemoryCore
         brand.addArrangedSubview(logo); brand.addArrangedSubview(brandText); stack.addArrangedSubview(brand)
         let toolbar = NSStackView(); toolbar.orientation = .horizontal; toolbar.spacing = 10
         for (title, action) in [("현재 작업 저장", #selector(save)), ("저장된 파일 열기", #selector(restore)), ("목록에서 제외", #selector(remove)), ("권한 설정", #selector(permissions))] {
-            let button = NSButton(title: title, target: self, action: action); button.bezelStyle = .rounded
+            let button = BrandButton(title: title, target: self, action: action); button.bezelStyle = .rounded
             button.controlSize = .large; button.font = .systemFont(ofSize: 14, weight: .medium)
             button.heightAnchor.constraint(equalToConstant: 44).isActive = true
             button.widthAnchor.constraint(greaterThanOrEqualToConstant: 155).isActive = true
-            if title == "현재 작업 저장" { button.bezelColor = .systemBlue; button.contentTintColor = .white }
+            button.primary = title == "현재 작업 저장"
             toolbar.addArrangedSubview(button); actions.append(button)
         }
         toolbar.addArrangedSubview(NSButton(title: "복원 중지", target: self, action: #selector(cancel)))
