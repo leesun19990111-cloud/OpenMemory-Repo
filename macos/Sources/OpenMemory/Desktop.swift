@@ -2,7 +2,7 @@ import AppKit
 import ApplicationServices
 import OpenMemoryCore
 
-struct AppInfo {
+struct AppInfo: Sendable {
     var pid: pid_t
     var bundleID: String
     var path: String

@@ -1,8 +1,8 @@
 import Foundation
 
-public enum EntryKind: String, Codable { case app, file, folder, web }
+public enum EntryKind: String, Codable, Sendable { case app, file, folder, web }
 
-public struct Entry: Codable, Equatable, Identifiable {
+public struct Entry: Codable, Equatable, Identifiable, Sendable {
     public var id: String
     public var kind: EntryKind
     public var bundleID: String
@@ -18,7 +18,7 @@ public struct Entry: Codable, Equatable, Identifiable {
     }
 }
 
-public struct Bounds: Codable, Equatable {
+public struct Bounds: Codable, Equatable, Sendable {
     public var x: Double, y: Double, width: Double, height: Double
     public init(x: Double, y: Double, width: Double, height: Double) {
         self.x = x; self.y = y; self.width = width; self.height = height
@@ -42,13 +42,13 @@ public struct Bounds: Codable, Equatable {
     }
 }
 
-public struct Display: Codable, Equatable {
+public struct Display: Codable, Equatable, Sendable {
     public var id: String
     public var area: Bounds
     public init(id: String, area: Bounds) { self.id = id; self.area = area }
 }
 
-public struct WindowRecord: Codable, Equatable, Identifiable {
+public struct WindowRecord: Codable, Equatable, Identifiable, Sendable {
     public var id: String
     public var bundleID: String
     public var title: String
@@ -74,7 +74,7 @@ public struct WindowRecord: Codable, Equatable, Identifiable {
     }
 }
 
-public struct Session: Codable, Equatable {
+public struct Session: Codable, Equatable, Sendable {
     public var schema = 1
     public var platform = "macOS"
     public var created = Date()
