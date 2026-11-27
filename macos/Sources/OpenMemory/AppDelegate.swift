@@ -18,6 +18,28 @@ import OpenMemoryCore
     private var task: Task<Void, Never>?
     private var busy = false
 
+    func renderPreview(to url: URL) throws {
+        setupWindow()
+        session.entries = [
+            Entry(kind: .file, bundleID: "com.microsoft.Powerpoint", appPath: "/Applications/Microsoft PowerPoint.app", appName: "PowerPoint", title: "프로젝트 제안서.pptx", url: "file:///tmp/example.pptx", note: "파일·창 배치"),
+            Entry(kind: .folder, bundleID: "com.apple.finder", appPath: "/System/Library/CoreServices/Finder.app", appName: "Finder", title: "설계 작업", url: "file:///tmp/example/", note: "폴더·창 배치"),
+            Entry(kind: .file, bundleID: "com.adobe.Photoshop", appPath: "/Applications/Adobe Photoshop.app", appName: "Photoshop", title: "레이아웃.psd", url: "file:///tmp/example.psd", note: "감지된 파일 경로"),
+            Entry(kind: .app, bundleID: "com.figma.Desktop", appPath: "/Applications/Figma.app", appName: "Figma", title: "Figma", note: "앱 실행·제목 보관"),
+            Entry(kind: .app, bundleID: "com.apple.Safari", appPath: "/Applications/Safari.app", appName: "Safari", title: "Safari", note: "앱 실행·창 배치")
+        ]
+        table.reloadData(); table.selectRowIndexes(IndexSet(integer: 1), byExtendingSelection: false)
+        details.string = "창을 이동하려면 손쉬운 사용 권한이 필요합니다.\n원본 문서의 수정 내용은 각 앱에서 먼저 저장하세요."
+        status.stringValue = "실제 Mac 앱 화면 · 예시 작업 목록 (개인 작업 기록 아님)"
+        window.makeKeyAndOrderFront(nil)
+        RunLoop.current.run(until: Date().addingTimeInterval(0.5))
+        let view = window.contentView!; view.layoutSubtreeIfNeeded(); view.displayIfNeeded()
+        guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { throw ModelError.invalidRecord }
+        view.cacheDisplay(in: view.bounds, to: bitmap)
+        guard let png = bitmap.representation(using: .png, properties: [:]) else { throw ModelError.invalidRecord }
+        try png.write(to: url)
+        window.orderOut(nil)
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupWindow(); setupMenu()
         do { session = try store.load() ?? Session() } catch { append(error.localizedDescription) }

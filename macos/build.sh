@@ -27,6 +27,7 @@ plutil -lint "$APP/Contents/Info.plist"
 codesign --force --sign - "$APP"
 codesign --verify --deep --strict "$APP"
 "$APP/Contents/MacOS/OpenMemory" --smoke-test
+"$APP/Contents/MacOS/OpenMemory" --render "$OUT/artifacts/OpenMemory-macOS-preview.png"
 lipo -verify_arch arm64 x86_64 "$APP/Contents/MacOS/OpenMemory"
 mkdir -p "$OUT/pkg-root/Applications"
 ditto "$APP" "$OUT/pkg-root/Applications/OpenMemory.app"
