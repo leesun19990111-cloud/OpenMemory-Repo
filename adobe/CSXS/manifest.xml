@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="local.openmemory.documents" ExtensionBundleVersion="2.2.0" ExtensionBundleName="OpenMemory Documents">
+  <ExtensionList><Extension Id="local.openmemory.documents.reader" Version="2.2.0"/></ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <Host Name="PHXS" Version="[20.0,99.9]"/><Host Name="PHSP" Version="[20.0,99.9]"/>
+      <Host Name="ILST" Version="[23.0,99.9]"/><Host Name="PPRO" Version="[14.0,99.9]"/>
+      <Host Name="AEFT" Version="[17.0,99.9]"/><Host Name="IDSN" Version="[15.0,99.9]"/>
+    </HostList>
+    <LocaleList><Locale Code="All"/></LocaleList>
+    <RequiredRuntimeList><RequiredRuntime Name="CSXS" Version="9.0"/></RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList><Extension Id="local.openmemory.documents.reader"><DispatchInfo>
+    <Resources><MainPath>./index.html</MainPath><ScriptPath>./reader.jsx</ScriptPath>
+      <CEFCommandLine><Parameter>--enable-nodejs</Parameter></CEFCommandLine>
+    </Resources>
+    <Lifecycle><AutoVisible>false</AutoVisible><StartOn>
+      <Event>applicationActivate</Event><Event>com.adobe.csxs.events.ApplicationActivate</Event>
+    </StartOn></Lifecycle>
+    <UI><Type>Custom</Type><Menu>OpenMemory Documents</Menu><Geometry><Size><Height>120</Height><Width>300</Width></Size></Geometry></UI>
+  </DispatchInfo></Extension></DispatchInfoList>
+</ExtensionManifest>
