@@ -154,6 +154,8 @@ public enum Matcher {
         if !saved.documentURL.isEmpty {
             let exact = sameApp.filter { candidates[$0].documentURL == saved.documentURL }
             if exact.count == 1 && savedGroup.filter({ $0.bundleID == saved.bundleID && $0.documentURL == saved.documentURL }).count == 1 { return exact[0] }
+            // Finder folder names alone cannot distinguish different directories with the same name.
+            if saved.bundleID == "com.apple.finder" { return nil }
             // Never match the title of a known different document in the same app.
             let byTitle = sameApp.filter { candidates[$0].documentURL.isEmpty && title(candidates[$0].title) == title(saved.title) }
             if byTitle.count == 1 && !title(saved.title).isEmpty && savedGroup.filter({ $0.bundleID == saved.bundleID && title($0.title) == title(saved.title) }).count == 1 { return byTitle[0] }

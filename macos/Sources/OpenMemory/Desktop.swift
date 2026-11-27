@@ -94,9 +94,8 @@ enum Desktop {
     }
     static func target(url: String, title: String, app: AppInfo) -> Entry? {
         guard let location = Validation.documentURL(url) else { return nil }
-        var directory: ObjCBool = false
-        if location.isFileURL && !FileManager.default.fileExists(atPath: location.path, isDirectory: &directory) { return nil }
-        let kind: EntryKind = location.isFileURL ? (directory.boolValue ? .folder : .file) : .web
+        // Do not probe NAS volumes during capture; the supplied URL is the evidence to preserve.
+        let kind: EntryKind = location.isFileURL ? (location.hasDirectoryPath || app.bundleID == "com.apple.finder" ? .folder : .file) : .web
         let entry = Entry(kind: kind, bundleID: app.bundleID, appPath: app.path, appName: app.name,
                           title: title.isEmpty ? location.lastPathComponent : title, url: location.absoluteString,
                           note: kind == .web ? "감지된 URL만 열기 · 전체 탭 목록 아님" : "감지된 경로 열기 · 연결된 창 배치")
@@ -136,6 +135,7 @@ enum Desktop {
                     } catch { session.warnings.append("Finder 폴더 연결: \(error.localizedDescription) · 자동화 권한을 확인하세요.") }
                 }
                 session.deduplicate()
+                session.entries.sort { $0.kind != .app && $1.kind == .app }
                 for index in session.entries.indices where session.entries[index].kind == .app {
                     let count = session.entries.filter { $0.bundleID == session.entries[index].bundleID && $0.kind != .app }.count
                     if count > 0 { session.entries[index].note = "연결된 문서·위치 \(count)개 (개별 행 참조)" }
@@ -149,7 +149,14 @@ enum Desktop {
         return await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
                 let deadline = Date().addingTimeInterval(5)
-                continuation.resume(returning: apps.flatMap { Accessibility.windows(app: $0, displays: screens, deadline: deadline) })
+                var windows = apps.flatMap { Accessibility.windows(app: $0, displays: screens, deadline: deadline) }
+                if apps.contains(where: { $0.bundleID == "com.apple.finder" }), let folders = try? FinderFolders.read() {
+                    for folder in folders where folders.filter({ $0.title == folder.title }).count == 1 {
+                        let indexes = windows.indices.filter { windows[$0].record.bundleID == "com.apple.finder" && windows[$0].record.title == folder.title }
+                        if indexes.count == 1 { windows[indexes[0]].record.documentURL = Validation.documentURL(folder.url)?.absoluteString ?? "" }
+                    }
+                }
+                continuation.resume(returning: windows)
             }
         }
     }

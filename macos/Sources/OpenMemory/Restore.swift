@@ -39,7 +39,7 @@ import OpenMemoryCore
         guard Validation.session(session) else { throw ModelError.invalidRecord }
         let active = await Desktop.capture()
         let alreadyOpen = Set(active.entries.map(\.id))
-        for entry in session.entries.sorted(by: { $0.kind != .app && $1.kind == .app }) {
+        for entry in session.entries {
             try Task.checkCancellation()
             if alreadyOpen.contains(entry.id) { log("\(entry.title) — 이미 열려 있음") }
             else {

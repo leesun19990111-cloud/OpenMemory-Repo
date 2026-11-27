@@ -28,7 +28,7 @@ codesign --force --sign - "$APP"
 codesign --verify --deep --strict "$APP"
 "$APP/Contents/MacOS/OpenMemory" --smoke-test
 "$APP/Contents/MacOS/OpenMemory" --render "$OUT/artifacts/OpenMemory-macOS-preview.png"
-lipo -verify_arch arm64 x86_64 "$APP/Contents/MacOS/OpenMemory"
+lipo "$APP/Contents/MacOS/OpenMemory" -verify_arch arm64 x86_64
 mkdir -p "$OUT/pkg-root/Applications"
 ditto "$APP" "$OUT/pkg-root/Applications/OpenMemory.app"
 pkgbuild --root "$OUT/pkg-root" --identifier local.openmemory.mac --version 3.0.0 --install-location / "$OUT/artifacts/OpenMemory-$VERSION-universal.pkg"

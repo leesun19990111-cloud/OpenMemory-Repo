@@ -27,6 +27,7 @@ final class CoreTests: XCTestCase {
     func testMissingDisplayFitsWindow() { let w = window(); let display = Display(id: "new", area: Bounds(x: -800, y: 0, width: 800, height: 600)); XCTAssertEqual(w.destination(displays: [display]), display.area) }
     func testUniqueDocumentMatchingAfterTitleChanges() { let w = window(url: entry().url); var current = w; current.title = "read only"; XCTAssertEqual(Matcher.index(saved: w, candidates: [current], savedGroup: [w]), 0) }
     func testDifferentDocumentIsNotMatchedBySameTitle() { let w = window(url: entry().url); var other = w; other.documentURL = entry("/tmp/other.xlsx").url; XCTAssertNil(Matcher.index(saved: w, candidates: [other], savedGroup: [w])) }
+    func testFinderNeedsPathEvidence() { var w = window(url: "file:///tmp/project/"); w.bundleID = "com.apple.finder"; var other = w; other.documentURL = ""; XCTAssertNil(Matcher.index(saved: w, candidates: [other], savedGroup: [w])) }
     func testAmbiguousTitlesAreNotMatched() { let w = window(); XCTAssertNil(Matcher.index(saved: w, candidates: [w, w], savedGroup: [w, w])) }
     func testTitleNormalization() { XCTAssertEqual(Matcher.title("  설계 * ● "), Matcher.title("설계")) }
     func testCrossAppNotMatched() { let w = window(); var other = w; other.bundleID = "other.app"; XCTAssertNil(Matcher.index(saved: w, candidates: [other], savedGroup: [w])) }
